@@ -122,3 +122,87 @@ Over time, trust becomes emergent and decentralized.
 ✅ Goal: transition from curated → trust-propagating → open network.
 
 
+##ReputationRegistry v1 (Whitelist Edition)
+
+```
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+/**
+ * @title ReputationRegistryV1 (Whitelist Edition)
+ * @notice 最小可用的 Reputation Registry，用於 ERC-8004 架構的 Phase 1。
+ *         僅允許白名單中批准的 rater 對 agent 評價。
+ *         所有評價以事件方式記錄，方便 indexer 收集與聚合。
+ *
+ *  ────────────────────────────────────────────────────────────────
+ *  特點：
+ *   - 僅允許 approved raters 評價 (bootstrapping)
+ *   - 紀錄 event：agentId, rater, score, comment, model, context
+ *   - 不進行鏈上計算（僅作為資料層）
+ *   - 便於未來擴充成 Reputation-of-Raters 或 staking 模型
+ *  ────────────────────────────────────────────────────────────────
+ */
+
+contract ReputationRegistryV1 {
+    /// @notice owner 可設定白名單
+    address public owner;
+
+    /// @notice 可發表評價的地址
+    mapping(address => bool) public approvedRaters;
+
+    /// @notice Reputation event — 主體資料都在事件中
+    event ReputationGiven(
+        uint256 indexed agentId,     // 被評 agent 的 ERC-8004 agentId
+        address indexed rater,       // 評價者地址
+        int256 score,                // 評分，可正可負
+        string comment,              // 文字描述
+        string model,                // 評價模型，例如 "reputation"、"crypto-economic"
+        string context,              // 評價背景，例如 "conversation", "task", "a2a"
+        string evidence              // 外部佐證 (IPFS CID / URL / tx hash)
+    );
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
+    }
+
+    modifier onlyApprovedRater() {
+        require(approvedRaters[msg.sender], "Not in whitelist");
+        _;
+    }
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    /// @notice 設定白名單評價者
+    function setApprovedRater(address rater, bool approved) external onlyOwner {
+        approvedRaters[rater] = approved;
+    }
+
+    /// @notice 發表評價（僅限白名單）
+    function giveReputation(
+        uint256 agentId,
+        int256 score,
+        string calldata comment,
+        string calldata model,
+        string calldata context,
+        string calldata evidence
+    ) external onlyApprovedRater {
+        emit ReputationGiven(agentId, msg.sender, score, comment, model, context, evidence);
+    }
+
+    /// @notice 查詢是否在白名單
+    function isApproved(address rater) external view returns (bool) {
+        return approvedRaters[rater];
+    }
+}
+
+```
+
+Add Approved rater - `setApprovedRater(address, true)`
+Remove Approved rater - `setApprovedRater(address, false)`
+check whitelist - `isApproved(address)`
+give rating and score - `giveReputation(agentId, score, comment, model, context, evidence)`
+
+
