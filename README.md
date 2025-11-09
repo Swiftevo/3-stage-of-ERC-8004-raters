@@ -33,4 +33,35 @@ Off-Chain Reputation Calculation – ERC-8004 only records the authorization on-
 
 In short, raters in the Reputation Registry are the client agents who provide task feedback to server agents. They are the ones who generate the data used to build decentralized, verifiable reputation scores across the agent network.
 
-# If raters lies or give unreal score, the reputation registray can't function normally. So how we can solve this problem? Why and how the raters can give a true and real score? Here is the thinking on this problem. 
+### If raters lies or give unreal score, the reputation registray can't function normally. So how we can solve this problem? Why and how the raters can give a true and real score? Here is the thinking on this problem. 
+
+1️⃣ Curated rater set (trusted / whitelisted raters)
+
+At the early stage, only verified or approved agents or builders (those in a whitelist or possessing specific attestations) can submit ratings.
+
+This creates a semi-closed, high-signal ecosystem, where every rating is presumed credible because:
+
+raters are already part of a vetted community,
+
+malicious or spammy agents are excluded at the registry level, and
+
+you can use off-chain validation or DAO voting to maintain the whitelist.
+
+✅ Goal: quickly establish a baseline of trustworthy feedback and data integrity before scaling to open participation.
+
+2️⃣ Introduce “reputation-of-raters” later
+
+Once the ecosystem has a stable set of active agents and meaningful interactions,
+you can enable reputation propagation, where each rater’s own credibility affects the weight of their ratings.
+
+This naturally evolves into a self-governing reputation graph, removing the need for manual whitelists:
+
+High-reputation raters gain greater influence.
+
+Low-reputation or unverified raters contribute less.
+
+Over time, trust becomes emergent and decentralized.
+
+✅ Goal: transition from curated → trust-propagating → open network.
+
+
