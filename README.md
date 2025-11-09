@@ -49,10 +49,67 @@ you can use off-chain validation or DAO voting to maintain the whitelist.
 
 ✅ Goal: quickly establish a baseline of trustworthy feedback and data integrity before scaling to open participation.
 
-2️⃣ Introduce “reputation-of-raters” later
+```mapping(address => bool) public approvedRaters;
+
+modifier onlyApprovedRater() {
+    require(approvedRaters[msg.sender], "Not in whitelist");
+    _;
+}
+
+function setApprovedRater(address rater, bool approved) external onlyOwner {
+    approvedRaters[rater] = approved;
+}
+
+function giveReputation(uint256 agentId, int256 score, string calldata comment)
+    external onlyApprovedRater
+{
+    emit ReputationGiven(agentId, msg.sender, score, comment, "trusted-initial");
+}
+```
+
+Whitelist can be 
+
+- core development team
+- early stage agent collaboration partners
+- Manual review approved list
+
+2️⃣ Trusted agent only
+
+Allow agent listed in the "Identiry Registry" participating as raters. It can cross-check the feedback and score with stage 1 white list raters.
+
+```
+IERC721 identityRegistry;
+
+constructor(address registryAddr) {
+    identityRegistry = IERC721(registryAddr);
+}
+
+modifier onlyRegisteredAgent() {
+    require(identityRegistry.balanceOf(msg.sender) > 0, "Not registered agent");
+    _;
+}
+
+function giveReputationByAgent(uint256 agentId, int256 score, string calldata comment)
+    external onlyRegisteredAgent
+{
+    emit ReputationGiven(agentId, msg.sender, score, comment, "agent-reputation");
+}
+```
+In this stage, rater is expended with some restrictions to build a true rating ecosystem. 
+
+3️⃣ Introduce “reputation-of-raters” 
 
 Once the ecosystem has a stable set of active agents and meaningful interactions,
 you can enable reputation propagation, where each rater’s own credibility affects the weight of their ratings.
+
+```
+agentScore = Σ (rating.score × rater.reputationWeight) / Σ (rater.reputationWeight)
+```
+
+It can come from
+- its rating histroy
+- Other rater reviewing to this rater
+- Attested domain or organization
 
 This naturally evolves into a self-governing reputation graph, removing the need for manual whitelists:
 
